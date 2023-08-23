@@ -1,15 +1,12 @@
 import pandas as pd
-
 from matplotlib import pyplot as plt
 import numpy as np
 from pymatgen import Composition
 import seaborn as sns
 from scipy import stats,integrate
-
 from matminer.featurizers import composition as cf
 from matminer.featurizers.base import MultipleFeaturizer
 from matminer.featurizers.composition import ElementFraction
-
 from sklearn import feature_selection
 from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.ensemble import RandomForestClassifier
@@ -22,9 +19,7 @@ from sklearn.model_selection import KFold
 import pickle
 
 path = r"data/Cleaned_Data0803.xlsx"
-
 model_path = r"model/gradientboostingtree.pickle"
-
 feature_calculators = MultipleFeaturizer([cf.Stoichiometry(),
                                           cf.ElementProperty.from_preset("magpie"),
                                           cf.ValenceOrbital(props=['avg']),
@@ -40,7 +35,6 @@ def load_need_dataSet(path, col_idx=0):
     # print(columns[3])
     se = df[columns[3]]
     label = df[columns[-1]]
-
     return se, columns[3], label
 
 
@@ -54,7 +48,6 @@ def forlumaToFeature(se):
         print(forluma)
         tmp = feature_calculators.featurize(forluma)
         out.append(tmp)
-
     return np.array(out), feature_labels
 
 
@@ -63,7 +56,6 @@ def getValidFeature(featureArr, label, y, feature_num=15):
     # via Select_model to choose feature
     valid_feature = SelectKBest(chi2, k=feature_num).fit_transform(featureArr, y)
     idx = SelectKBest(chi2, k=feature_num).fit(featureArr, y).get_support()
-
     print(valid_feature.shape)
     valid_label = []
     valid_idx = []
@@ -96,7 +88,6 @@ def bulid_model(X, y, feature_label):
 
     # to build the hyperparameters of the code
     param_dict = {"n_estimators": [20, 40, 60, 80, 100, 120], "learning_rate":[0.2,0.5,0.8,1],"max_depth": [10, 20, 30], "min_samples_leaf": [1, 2, 3],"subsample":[0.5,0.6,0.7,0.8,0.9,1]}
-
     rf = GradientBoostingClassifier()
     # using the gridsearch to find the best parameters
     estimator = GridSearchCV(rf, param_grid=param_dict, cv=10)
